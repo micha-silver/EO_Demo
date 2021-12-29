@@ -6,6 +6,12 @@ Micha Silver
 -   [Install and load packages](#install-and-load-packages)
 -   [Query DEIMS SDR](#query-deims-sdr)
 -   [General information](#general-information)
+-   [Spatial queries](#spatial-queries)
+    -   [Get boundary of site](#get-boundary-of-site)
+    -   [Save boundary as shapefile/geopackage for
+        later](#save-boundary-as-shapefilegeopackage-for-later)
+-   [Dependency on quality of data in DEIMS
+    SDR](#dependency-on-quality-of-data-in-deims-sdr)
 
 ## Install and load packages
 
@@ -13,8 +19,10 @@ Begin by installing packages and loading them.
 
 ``` r
 # These packages are required
-pkg_list = c("remotes",  # to install from github
-             "tmap"      # to visualize maps
+pkg_list = c("remotes",            # to install from github
+             "tmap", "tmaptools",  # to visualize maps
+             "sf", "terra",        # spatial packages
+             "OpenStreetMap"       # basemaps
             )
 # Check if already installed, install if not
 installed_packages <- pkg_list %in% rownames(installed.packages())
@@ -22,15 +30,32 @@ if (any(installed_packages == FALSE)) {
   install.packages(pkg_list[!installed_packages])
 }
 # Load Packages
-lapply(pkg_list, function(p) {require(p,
-                                      character.only = TRUE,
-                                      quietly=TRUE)})
+lapply(pkg_list,
+       function(p) {require(p,
+                            character.only = TRUE,
+                            quietly=TRUE)})
 ```
+
+    ## Linking to GEOS 3.9.0, GDAL 3.2.2, PROJ 7.2.1; sf_use_s2() is TRUE
+
+    ## terra 1.5.8
 
     ## [[1]]
     ## [1] TRUE
     ## 
     ## [[2]]
+    ## [1] TRUE
+    ## 
+    ## [[3]]
+    ## [1] TRUE
+    ## 
+    ## [[4]]
+    ## [1] TRUE
+    ## 
+    ## [[5]]
+    ## [1] TRUE
+    ## 
+    ## [[6]]
     ## [1] TRUE
 
 ``` r
@@ -70,13 +95,13 @@ supported. So `country_name = "Austri"` will find sites in Austria, but
 not Australia.
 
 ``` r
-eisen<- get_ilter_generalinfo(country="Austri",
+eisen<- get_ilter_generalinfo(country="Austria",
                               site_name = "Eisen")
 eisen_deimsid <- eisen$uri
-cairngorm <- get_ilter_generalinfo(country = "United K",
+cairngorms <- get_ilter_generalinfo(country = "United K",
                                    # To differentiate from United States
                                    site_name = "Cairngorms National")
-cairngorm_deimsid <- cairngorm$uri
+cairngorms_deimsid <- cairngorms$uri
 ```
 
 ## General information
@@ -134,7 +159,7 @@ response$researchTopics
     ## 37           vegetation dynamics http://vocabs.lter-europe.net/EnvThes/21711
 
 ``` r
-response <- get_site_info(cairngorm_deimsid, category = "Affiliations")
+response <- get_site_info(cairngorms_deimsid, category = "Affiliations")
 response$affiliation.projects
 ```
 
@@ -154,8 +179,13 @@ response$affiliation.projects
     ## 5                           https://cordis.europa.eu/project/id/654359
     ## 6                                                                 <NA>
 
+## Spatial queries
+
+### Get boundary of site
+
 ``` r
 eisen_boundary <- get_site_info(eisen_deimsid, "Boundaries")
+osm <- read_osm(eisen_boundary, ext = 1.2)
 tmap_mode("plot")
 ```
 
@@ -163,9 +193,87 @@ tmap_mode("plot")
 
 ``` r
 #tm_basemap("Stamen.TerrainBackground") +
-tm_basemap("OpenStreetMap") +
-  tm_shape(eisen_boundary) +
+#tm_basemap("OpenStreetMap") +
+tm_shape(osm) +
+    tm_rgb() + 
+tm_shape(eisen_boundary) +
   tm_polygons(col = "skyblue", alpha = 0.25, border.col = "blue")
 ```
 
 ![](ReLTER_demo_files/figure-gfm/boundary-1.png)<!-- -->
+
+### Save boundary as shapefile/geopackage for later
+
+``` r
+boundary_file <- file.path("~", "eisen_boundary.gpkg")
+
+# Remove country column since it is a list
+eisen_boundary <- subset(eisen_boundary, select = -country)
+st_write(eisen_boundary, dsn = boundary_file, append = FALSE)
+```
+
+    ## Deleting layer `eisen_boundary' using driver `GPKG'
+    ## Writing layer `eisen_boundary' to data source 
+    ##   `/home/micha/eisen_boundary.gpkg' using driver `GPKG'
+    ## Writing 1 features with 7 fields and geometry type Polygon.
+
+## Dependency on quality of data in DEIMS SDR
+
+-   Missing information
+-   Duplicate names
+-   Missing boundary shapefile
+
+``` r
+eisen_contact <- get_site_info(eisen_deimsid, "Contact")
+names(eisen_contact)
+```
+
+    ## [1] "title"        "uri"          "geoCoord"     "country"      "geoElev.avg" 
+    ## [6] "geoElev.min"  "geoElev.max"  "geoElev.unit"
+
+``` r
+# No contact information :-(
+
+kiskun <- get_ilter_generalinfo(country_name = "Hungary",
+                                site_name = "KISKUN LTER")
+kiskun_deimsid <- kiskun$uri
+length(kiskun_deimsid)
+```
+
+    ## [1] 8
+
+``` r
+# Multiple sites with similar name :-(
+# Which to choose?
+kiskun$title
+```
+
+    ## [1] "Kiskun Forest Reserve Sites, KISKUN LTER - Hungary"   
+    ## [2] "VULCAN Kiskunsag, KISKUN LTER - Hungary"              
+    ## [3] "Kiskun Restoration Experiments, KISKUN LTER - Hungary"
+    ## [4] "Kiskun Site Network (Jedlik), KISKUN LTER - Hungary"  
+    ## [5] "KISKUN LTER - Hungary"                                
+    ## [6] "LTER Fulophaza Site, KISKUN LTER - Hungary"           
+    ## [7] "Bugac-Bocsa-Orgovany Site, KISKUN LTER - Hungary"     
+    ## [8] "Orgovany Site, KISKUN LTER - Hungary"
+
+``` r
+kiskun_deimsid <- kiskun$uri[5]
+length(kiskun_deimsid)
+```
+
+    ## [1] 1
+
+``` r
+kiskun_boundary <- get_site_info(kiskun_deimsid, "Boundaries")
+```
+
+    ## 
+    ## ----
+    ## This site does not have boundaries uploaded to DEIMS-SDR.
+    ## Please verify in the site page: https://deims.org/124f227a-787d-4378-bc29-aa94f29e1732
+    ## ----
+
+``` r
+# Oops, no boundary for this site!
+```
