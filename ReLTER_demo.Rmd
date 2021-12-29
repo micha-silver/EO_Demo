@@ -1,0 +1,88 @@
+---
+title: "Demonstrating the Use of the `ReLTER` package"
+author: "Micha Silver"
+date: "29/12/2021"
+output: 
+  html_document: default
+  github_document: 
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Install and load packages
+
+Begin by installing packages and loading them.
+
+```{r packages}
+# These packages are required
+pkg_list = c("remotes",  # to install from github
+             "tmap"      # to visualize maps
+            )
+# Check if already installed, install if not
+installed_packages <- pkg_list %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(pkg_list[!installed_packages])
+}
+# Load Packages
+lapply(pkg_list, function(p) {require(p,
+                                      character.only = TRUE,
+                                      quietly=TRUE)})
+
+# Now install `ReLTER` from github and load
+remotes::install_github("oggioniale/ReLTER")
+library(ReLTER)
+```
+
+## Query DEIMS SDR
+
+We can query the DEIMS database, and get a few DEIMS IDs.
+This code retrieves the full URL to each eLTER site.
+Sites can be selected by country name, site name or both.
+Note that partial matching is also supported. So 
+`country_name = "Austri"` will find sites in Austria, but not Australia.
+
+```{r deims}
+eisen<- get_ilter_generalinfo(country="Austri",
+                              site_name = "Eisen")
+eisen_deimsid <- eisen$uri
+cairngorm <- get_ilter_generalinfo(country = "United K",
+                                   # To differentiate from United States
+                                   site_name = "Cairngorms National")
+cairngorm_deimsid <- cairngorm$uri
+```
+
+## General information
+
+In `ReLTER` there are functions to grab metadata for the sites.
+These categories are available:
+  - 'Affiliations'
+  - 'Boundaries'  (spatial layer)
+  - 'Contacts'
+  - 'EnvCharacts' (environmental characteristics)
+  - 'General',
+  - 'Infrastructure'
+  - 'Parameters'  (which parameters are collected)
+  - 'RelateRes'   (related research)
+  - 'ResearchTop' (research topics)
+
+
+```{r general-info}
+response <- get_site_info(eisen_deimsid, category = "ResearchTop")
+response$researchTopics
+
+response <- get_site_info(cairngorm_deimsid, category = "Affiliations")
+response$affiliation.projects
+
+```
+```{r boundary}
+eisen_boundary <- get_site_info(eisen_deimsid, "Boundaries")
+tmap_mode("view")
+#tm_basemap("Stamen.TerrainBackground") +
+tm_basemap("OpenStreetMap") +
+  tm_shape(eisen_boundary) +
+  tm_polygons(col = "skyblue", alpha = 0.25, border.col = "blue")
+```
+
