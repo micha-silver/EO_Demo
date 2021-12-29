@@ -3,9 +3,9 @@ title: "Demonstrating the Use of the `ReLTER` package"
 author: "Micha Silver"
 date: "29/12/2021"
 output: 
-  html_document: default
   github_document: 
     toc: true
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -79,7 +79,7 @@ response$affiliation.projects
 ```
 ```{r boundary}
 eisen_boundary <- get_site_info(eisen_deimsid, "Boundaries")
-tmap_mode("view")
+tmap_mode("plot")
 #tm_basemap("Stamen.TerrainBackground") +
 tm_basemap("OpenStreetMap") +
   tm_shape(eisen_boundary) +
