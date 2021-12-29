@@ -36,10 +36,6 @@ lapply(pkg_list,
                             quietly=TRUE)})
 ```
 
-    ## Linking to GEOS 3.9.0, GDAL 3.2.2, PROJ 7.2.1; sf_use_s2() is TRUE
-
-    ## terra 1.5.8
-
     ## [[1]]
     ## [1] TRUE
     ## 
@@ -61,30 +57,8 @@ lapply(pkg_list,
 ``` r
 # Now install `ReLTER` from github and load
 remotes::install_github("oggioniale/ReLTER")
-```
-
-    ## Skipping install of 'ReLTER' from a github remote, the SHA1 (5f9b0479) has not changed since last install.
-    ##   Use `force = TRUE` to force installation
-
-``` r
 library(ReLTER)
 ```
-
-    ## 
-    ## 
-    ## ReLTER is specially drafted for the LTER community.
-    ## 
-    ## To contribute to the improvement of this package, join the group of
-    ##     developers (https://github.com/oggioniale/ReLTER).
-    ## 
-    ## If you use this package, please cite as:
-    ## 
-    ## Alessandro Oggioni, Micha Silver, Luigi Ranghetti & Paolo Tagliolato.
-    ##     (2021) oggioniale/ReLTER: ReLTER v1.0.0 (1.0.0). Zenodo.
-    ##     https://doi.org/10.5281/zenodo.5576813
-    ## 
-    ## Type 'citation(package = 'ReLTER')' on how to cite R packages in
-    ##     publications.
 
 ## Query DEIMS SDR
 
@@ -192,12 +166,9 @@ tmap_mode("plot")
     ## tmap mode set to plotting
 
 ``` r
-#tm_basemap("Stamen.TerrainBackground") +
-#tm_basemap("OpenStreetMap") +
-tm_shape(osm) +
-    tm_rgb() + 
-tm_shape(eisen_boundary) +
-  tm_polygons(col = "skyblue", alpha = 0.25, border.col = "blue")
+# tm_basemap('Stamen.TerrainBackground') + tm_basemap('OpenStreetMap') +
+tm_shape(osm) + tm_rgb() + tm_shape(eisen_boundary) + tm_polygons(col = "skyblue",
+    alpha = 0.25, border.col = "blue")
 ```
 
 ![](ReLTER_demo_files/figure-gfm/boundary-1.png)<!-- -->
@@ -226,54 +197,33 @@ st_write(eisen_boundary, dsn = boundary_file, append = FALSE)
 ``` r
 eisen_contact <- get_site_info(eisen_deimsid, "Contact")
 names(eisen_contact)
-```
-
-    ## [1] "title"        "uri"          "geoCoord"     "country"      "geoElev.avg" 
-    ## [6] "geoElev.min"  "geoElev.max"  "geoElev.unit"
-
-``` r
+## [1] "title"        "uri"          "geoCoord"     "country"      "geoElev.avg" 
+## [6] "geoElev.min"  "geoElev.max"  "geoElev.unit"
 # No contact information :-(
 
-kiskun <- get_ilter_generalinfo(country_name = "Hungary",
-                                site_name = "KISKUN LTER")
+kiskun <- get_ilter_generalinfo(country_name = "Hungary", site_name = "KISKUN LTER")
 kiskun_deimsid <- kiskun$uri
 length(kiskun_deimsid)
-```
-
-    ## [1] 8
-
-``` r
-# Multiple sites with similar name :-(
-# Which to choose?
+## [1] 8
+# Multiple sites with similar name :-( Which to choose?
 kiskun$title
-```
-
-    ## [1] "Kiskun Forest Reserve Sites, KISKUN LTER - Hungary"   
-    ## [2] "VULCAN Kiskunsag, KISKUN LTER - Hungary"              
-    ## [3] "Kiskun Restoration Experiments, KISKUN LTER - Hungary"
-    ## [4] "Kiskun Site Network (Jedlik), KISKUN LTER - Hungary"  
-    ## [5] "KISKUN LTER - Hungary"                                
-    ## [6] "LTER Fulophaza Site, KISKUN LTER - Hungary"           
-    ## [7] "Bugac-Bocsa-Orgovany Site, KISKUN LTER - Hungary"     
-    ## [8] "Orgovany Site, KISKUN LTER - Hungary"
-
-``` r
+## [1] "Kiskun Forest Reserve Sites, KISKUN LTER - Hungary"   
+## [2] "VULCAN Kiskunsag, KISKUN LTER - Hungary"              
+## [3] "Kiskun Restoration Experiments, KISKUN LTER - Hungary"
+## [4] "Kiskun Site Network (Jedlik), KISKUN LTER - Hungary"  
+## [5] "KISKUN LTER - Hungary"                                
+## [6] "LTER Fulophaza Site, KISKUN LTER - Hungary"           
+## [7] "Bugac-Bocsa-Orgovany Site, KISKUN LTER - Hungary"     
+## [8] "Orgovany Site, KISKUN LTER - Hungary"
 kiskun_deimsid <- kiskun$uri[5]
 length(kiskun_deimsid)
-```
-
-    ## [1] 1
-
-``` r
+## [1] 1
 kiskun_boundary <- get_site_info(kiskun_deimsid, "Boundaries")
-```
+## 
+## ----
+## This site does not have boundaries uploaded to DEIMS-SDR.
+## Please verify in the site page: https://deims.org/124f227a-787d-4378-bc29-aa94f29e1732
+## ----
 
-    ## 
-    ## ----
-    ## This site does not have boundaries uploaded to DEIMS-SDR.
-    ## Please verify in the site page: https://deims.org/124f227a-787d-4378-bc29-aa94f29e1732
-    ## ----
-
-``` r
 # Oops, no boundary for this site!
 ```

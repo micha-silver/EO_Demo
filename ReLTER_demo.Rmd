@@ -3,13 +3,14 @@ title: "Demonstrating the Use of the `ReLTER` package"
 author: "Micha Silver"
 date: "29/12/2021"
 output: 
-  html_document: default
   github_document: 
     toc: true
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(tidy = TRUE)
 ```
 
 ## Install and load packages
@@ -98,7 +99,7 @@ tm_shape(eisen_boundary) +
 
 ### Save boundary as shapefile/geopackage for later
 
-```{r st_write}
+```{r st_write, message=FALSE}
 boundary_file <- file.path("~", "eisen_boundary.gpkg")
 
 # Remove country column since it is a list
