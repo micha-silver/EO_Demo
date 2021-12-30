@@ -98,6 +98,7 @@ tm_shape(osm) +
   tm_raster(style = "pretty", palette = "Spectral", alpha=0.75)
 
 eisen_ndvi <- get_site_ODS(eisen_deimsid, "ndvi_spring")
+eisen_ndvi <- eisen_ndvi / 255
 tm_shape(osm) +
 	tm_rgb() + 
   tm_shape(eisen_ndvi) +

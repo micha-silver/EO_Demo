@@ -22,8 +22,9 @@ Micha Silver
     -   [Save to a Geotiff file for use in other GIS
         software](#save-to-a-geotiff-file-for-use-in-other-gis-software)
 
-This code demonstrates the use of the new `ReLTER` package. [Allesando
-Oggioni’s github page](https://github.com/oggioniale/ReLTER)
+This code demonstrates the use of the new `ReLTER` package. For more
+details, see Allesando Oggioni’s [github
+page](https://github.com/oggioniale/ReLTER)
 
 Alessandro Oggioni, Micha Silver, Luigi Ranghetti & Paolo Tagliolato.
 (2021). oggioniale/ReLTER: ReLTER v1.0.0 (1.0.0). Zenodo.
@@ -298,10 +299,11 @@ tm_shape(osm) + tm_rgb() + tm_shape(eisen_corine) + tm_raster(style = "pretty", 
 ### NDVI during the spring
 
 The COG format converts raster data to integer. To restore normal NDVI
-values, divide raster by
+values, divide raster by 255
 
 ``` r
 eisen_ndvi <- get_site_ODS(eisen_deimsid, "ndvi_spring")
+eisen_ndvi <- eisen_ndvi/255
 tm_shape(osm) + tm_rgb() + tm_shape(eisen_ndvi) + tm_raster(style = "pretty", palette = "RdYlGn",
     alpha = 0.75)
 ```
@@ -313,7 +315,7 @@ tm_shape(osm) + tm_rgb() + tm_shape(eisen_ndvi) + tm_raster(style = "pretty", pa
 ### Small eLTER sites
 
 ODS data layers are at 30 meter resolution, suitable for small sites.
-This code examines the Teneno site at Harsleben.
+This code examines the Tereno site at Harsleben.
 
 ``` r
 # Acquire Tereno ID and boundary
