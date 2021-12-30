@@ -45,8 +45,13 @@ eisen_boundary <- get_site_info(eisen_deimsid, "Boundaries")
 # Prepare OSM background tile and plot
 osm <- read_osm(eisen_boundary, ext = 1.2)
 tmap_mode("plot")
-#tm_basemap("Stamen.TerrainBackground") +
-#tm_basemap("OpenStreetMap") +
+
+# For interactive maps use:
+# tmap_mode("view")
+# Then these basemaps are available:
+# tm_basemap("Stamen.TerrainBackground") +
+# tm_basemap("OpenStreetMap") +
+
 tm_shape(osm) +
 	tm_rgb() + 
 tm_shape(eisen_boundary) +
@@ -56,6 +61,7 @@ tm_shape(eisen_boundary) +
 ## boundary_file <- file.path("~", "eisen_boundary.gpkg")
 ## 
 ## # Remove country column since it is a list
+## # (Some sites extend across country boundaries)
 ## eisen_boundary <- subset(eisen_boundary, select = -country)
 ## st_write(eisen_boundary, dsn = boundary_file, append = FALSE)
 
@@ -78,16 +84,14 @@ kiskun_boundary <- get_site_info(kiskun_deimsid, "Boundaries")
 
 # Use boundary and OSM tile from above
 eisen_landcover <- get_site_ODS(eisen_deimsid, "landcover")
-tmap_mode("plot")
-# tmap_mode("view")
-# tm_basemap("Stamen.TerrainBackground") +
-# tm_basemap("OpenStreetMap") +
+
 tm_shape(osm) +
 	tm_rgb() + 
   tm_shape(eisen_landcover) +
   tm_raster(style = "pretty", palette = "RdYlBu", alpha=0.75)
 
 eisen_corine <- get_site_ODS(eisen_deimsid, "clc2018")
+
 tm_shape(osm) +
 	tm_rgb() + 
   tm_shape(eisen_corine) +

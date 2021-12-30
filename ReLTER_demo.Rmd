@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(tidy = TRUE)
 ```
 
-## Install and load packages
+# Install and load packages
 
 Begin by installing packages and loading them.
 
@@ -46,7 +46,7 @@ remotes::install_github("oggioniale/ReLTER")
 library(ReLTER)
 ```
 
-## Query DEIMS SDR
+# Query DEIMS SDR
 
 The `ReLTER` package interfaces with the [DEIMS SDR](https://deims.org/) database.
 
@@ -67,7 +67,7 @@ cairngorms <- get_ilter_generalinfo(country = "United K",
 cairngorms_deimsid <- cairngorms$uri
 ```
 
-## General metadata
+### General metadata
 
 In `ReLTER` there are functions to grab metadata for the sites. Metadata is
 available for a few categories.
@@ -94,7 +94,7 @@ response <- get_site_info(cairngorms_deimsid, category = "Affiliations")
 response$affiliation.projects
 
 ```
-## Spatial queries
+# Spatial queries
 
 Now use the DEIMS ID, acquired above, to get the boundary of a site, 
 by setting `category = "Boundaries"`.
@@ -108,8 +108,13 @@ eisen_boundary <- get_site_info(eisen_deimsid, "Boundaries")
 # Prepare OSM background tile and plot
 osm <- read_osm(eisen_boundary, ext = 1.2)
 tmap_mode("plot")
-#tm_basemap("Stamen.TerrainBackground") +
-#tm_basemap("OpenStreetMap") +
+
+# For interactive maps use:
+# tmap_mode("view")
+# Then these basemaps are available:
+# tm_basemap("Stamen.TerrainBackground") +
+# tm_basemap("OpenStreetMap") +
+
 tm_shape(osm) +
 	tm_rgb() + 
 tm_shape(eisen_boundary) +
@@ -125,11 +130,12 @@ The code below saves the boundary to a file for use in other GIS software.
 boundary_file <- file.path("~", "eisen_boundary.gpkg")
 
 # Remove country column since it is a list
+# (Some sites extend across country boundaries)
 eisen_boundary <- subset(eisen_boundary, select = -country)
 st_write(eisen_boundary, dsn = boundary_file, append = FALSE)
 ```
 
-## Dependency on quality of data in DEIMS SDR
+# Dependency on quality of data in DEIMS SDR
 
 `ReLTER` relies on the DEIMS SDR database for all site queries. Therefore, 
 any errors or missing data will obviously be echoed in the `ReLTER` results.
@@ -159,13 +165,13 @@ kiskun_boundary <- get_site_info(kiskun_deimsid, "Boundaries")
 
 # Oops, no boundary for this site!
 ```
-## Datasets from Open DataScience Europe
+# Datasets from Open DataScience Europe
 
 The recent efforts by the [Geoharmonizer](https://opendatascience.eu/geoharmonizer-project/) program have resulted in a consolidated set of freely available raster data (gridded) datasets.
 All rasters are formatted as Cloud Optimzed Geotiff (COG). These can be viewed on the
 [ODS web portal](https://maps.opendatascience.eu/).
 
-The code below demonstrates how to access various data from ODS,
+The code below demonstrates how to access various data from ODS from within *R*,
 and to clip to site boundaries. The datasets currently implemented are:
 
   - "landcover"     (Landcover at 30 meter resolution from Landsat)
@@ -182,10 +188,7 @@ and to clip to site boundaries. The datasets currently implemented are:
 ```{r ods-landcover}
 # Use boundary and OSM tile from above
 eisen_landcover <- get_site_ODS(eisen_deimsid, "landcover")
-tmap_mode("plot")
-# tmap_mode("view")
-# tm_basemap("Stamen.TerrainBackground") +
-# tm_basemap("OpenStreetMap") +
+
 tm_shape(osm) +
 	tm_rgb() + 
   tm_shape(eisen_landcover) +
@@ -196,6 +199,7 @@ tm_shape(osm) +
 
 ```{r ods-corine}
 eisen_corine <- get_site_ODS(eisen_deimsid, "clc2018")
+
 tm_shape(osm) +
 	tm_rgb() + 
   tm_shape(eisen_corine) +

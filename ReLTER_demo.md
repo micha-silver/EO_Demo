@@ -5,7 +5,7 @@ Micha Silver
 
 -   [Install and load packages](#install-and-load-packages)
 -   [Query DEIMS SDR](#query-deims-sdr)
--   [General metadata](#general-metadata)
+    -   [General metadata](#general-metadata)
 -   [Spatial queries](#spatial-queries)
     -   [Get boundary of site](#get-boundary-of-site)
     -   [Save boundary as shapefile/geopackage for
@@ -29,7 +29,7 @@ Alessandro Oggioni, Micha Silver, Luigi Ranghetti & Paolo Tagliolato.
 (2021). oggioniale/ReLTER: ReLTER v1.0.0 (1.0.0). Zenodo.
 <https://doi.org/10.5281/zenodo.5576813>
 
-## Install and load packages
+# Install and load packages
 
 Begin by installing packages and loading them.
 
@@ -52,7 +52,7 @@ remotes::install_github("oggioniale/ReLTER")
 library(ReLTER)
 ```
 
-## Query DEIMS SDR
+# Query DEIMS SDR
 
 The `ReLTER` package interfaces with the [DEIMS SDR](https://deims.org/)
 database.
@@ -71,7 +71,7 @@ cairngorms <- get_ilter_generalinfo(country = "United K", site_name = "Cairngorm
 cairngorms_deimsid <- cairngorms$uri
 ```
 
-## General metadata
+### General metadata
 
 In `ReLTER` there are functions to grab metadata for the sites. Metadata
 is available for a few categories.
@@ -156,7 +156,7 @@ response$affiliation.projects
     ## 5                           https://cordis.europa.eu/project/id/654359
     ## 6                                                                 <NA>
 
-## Spatial queries
+# Spatial queries
 
 Now use the DEIMS ID, acquired above, to get the boundary of a site, by
 setting `category = "Boundaries"`.
@@ -175,7 +175,10 @@ tmap_mode("plot")
     ## tmap mode set to plotting
 
 ``` r
-# tm_basemap('Stamen.TerrainBackground') + tm_basemap('OpenStreetMap') +
+# For interactive maps use: tmap_mode('view') Then these basemaps are
+# available: tm_basemap('Stamen.TerrainBackground') +
+# tm_basemap('OpenStreetMap') +
+
 tm_shape(osm) + tm_rgb() + tm_shape(eisen_boundary) + tm_polygons(col = "skyblue",
     alpha = 0.25, border.col = "blue")
 ```
@@ -191,12 +194,13 @@ software.
 # Edit here to choose your output directory
 boundary_file <- file.path("~", "eisen_boundary.gpkg")
 
-# Remove country column since it is a list
+# Remove country column since it is a list (Some sites extend across country
+# boundaries)
 eisen_boundary <- subset(eisen_boundary, select = -country)
 st_write(eisen_boundary, dsn = boundary_file, append = FALSE)
 ```
 
-## Dependency on quality of data in DEIMS SDR
+# Dependency on quality of data in DEIMS SDR
 
 `ReLTER` relies on the DEIMS SDR database for all site queries.
 Therefore, any errors or missing data will obviously be echoed in the
@@ -242,7 +246,7 @@ kiskun_boundary <- get_site_info(kiskun_deimsid, "Boundaries")
 # Oops, no boundary for this site!
 ```
 
-## Datasets from Open DataScience Europe
+# Datasets from Open DataScience Europe
 
 The recent efforts by the
 [Geoharmonizer](https://opendatascience.eu/geoharmonizer-project/)
@@ -251,8 +255,9 @@ data (gridded) datasets. All rasters are formatted as Cloud Optimzed
 Geotiff (COG). These can be viewed on the [ODS web
 portal](https://maps.opendatascience.eu/).
 
-The code below demonstrates how to access various data from ODS, and to
-clip to site boundaries. The datasets currently implemented are:
+The code below demonstrates how to access various data from ODS from
+within *R*, and to clip to site boundaries. The datasets currently
+implemented are:
 
 -   “landcover” (Landcover at 30 meter resolution from Landsat)
 -   “clc2018” (Corine landcover from 2018)
@@ -268,14 +273,7 @@ clip to site boundaries. The datasets currently implemented are:
 ``` r
 # Use boundary and OSM tile from above
 eisen_landcover <- get_site_ODS(eisen_deimsid, "landcover")
-tmap_mode("plot")
-```
 
-    ## tmap mode set to plotting
-
-``` r
-# tmap_mode('view') tm_basemap('Stamen.TerrainBackground') +
-# tm_basemap('OpenStreetMap') +
 tm_shape(osm) + tm_rgb() + tm_shape(eisen_landcover) + tm_raster(style = "pretty",
     palette = "RdYlBu", alpha = 0.75)
 ```
@@ -288,6 +286,7 @@ tm_shape(osm) + tm_rgb() + tm_shape(eisen_landcover) + tm_raster(style = "pretty
 
 ``` r
 eisen_corine <- get_site_ODS(eisen_deimsid, "clc2018")
+
 tm_shape(osm) + tm_rgb() + tm_shape(eisen_corine) + tm_raster(style = "pretty", palette = "Spectral",
     alpha = 0.75)
 ```
