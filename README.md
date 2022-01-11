@@ -19,9 +19,12 @@ Micha Silver and Alessandro Oggioni
         Landcover](#compare-with-corine-lower-resolution-landcover)
     -   [NDVI during the spring](#ndvi-during-the-spring)
     -   [Small eLTER sites](#small-elter-sites)
-    -   [Copernicus building area in Saldur river catchment site](#copernicus-building-area-in-saldur-river-catchment-site)
     -   [Save to a Geotiff file for use in other GIS
         software](#save-to-a-geotiff-file-for-use-in-other-gis-software)
+    -   [Copernicus building area in Saldur river catchment
+        site](#copernicus-building-area-in-saldur-river-catchment-site)
+-   [Datasets from MODIS](#datasets-from-modis)
+    -   [TODO](#todo)
 
 This code demonstrates the use of the new `ReLTER` package. For more
 details, see Allesando Oggioni’s [github
@@ -351,42 +354,6 @@ tm_shape(osm) + tm_rgb() + tm_shape(tereno_corine) + tm_raster(style = "pretty",
 
 ![](ReLTER_demo_files/figure-gfm/ods-tereno-landcover-2.png)<!-- -->
 
-### Copernicus building area in Saldur river catchment site
-
-``` r
-saldurRiver_osmLandUse <- get_site_ODS(
-  deimsid = "https://deims.org/97ff6180-e5d1-45f2-a559-8a7872eb26b1",
-  dataset = "osm_buildings"
-)
-
-tmap_mode("plot")
-
-saldur_boundary <- get_site_info(
-  deimsid = "https://deims.org/97ff6180-e5d1-45f2-a559-8a7872eb26b1",
-  "Boundaries"
-)
-
-# Prepare OSM background tile and plot
-osm <- read_osm(saldur_boundary, ext = 1.2)
-# Hillshade of Saldur river bounding box
-saldur_hs <- raster::raster("saldur_hillshade.tif")
-
-tm_shape(osm) +
-  tm_rgb() +
-  tm_compass(type = "arrow", position = c("right", "bottom"), text.size = 1) +
-  tm_scale_bar(position = c(0.6, "bottom"), text.size = .8) +
-  tm_credits("Data from lcv building Copernicus", position = c("left", "top"), size = 1) +
-  tm_layout(legend.position = c("left", "bottom")) +
-  tm_shape(saldur_hs) +
-  tm_raster(palette = "-Greys", style = "cont", legend.show = FALSE, alpha = .4) +
-  tm_shape(saldur_boundary) +
-  tm_polygons(col = "skyblue", alpha = 0.2, border.col = "gray") +
-  tm_shape(saldurRiver_osmLandUse) +
-  tm_raster(style = "cont") +
-  tm_layout(legend.outside = TRUE)
-```
-![](ReLTER_demo_files/figure-gfm/ods-saldur-osm_buildings-1.png)<!-- -->
-
 ### Save to a Geotiff file for use in other GIS software
 
 ``` r
@@ -394,3 +361,35 @@ tm_shape(osm) +
 landcover_file <- file.path("~", "tereno_landcover.tif")
 writeRaster(tereno_landcover, landcover_file, overwrite = TRUE)
 ```
+
+### Copernicus building area in Saldur river catchment site
+
+This code chunk shows how to acquire OpenStreetMap building footprints
+from the ODS datasets. OSM building footprints are available by setting
+the `dataset` option to “osm\_buildings”. Here is an example for the
+Saldur river basin in Italy.
+
+``` r
+saldur <- get_ilter_generalinfo(country = "Italy", site_name = "Saldur River Catchment")
+saldur_deimsid <- saldur$uri
+saldurRiver_osmLandUse <- get_site_ODS(deimsid = saldur_deimsid, dataset = "osm_buildings")
+saldur_boundary <- get_site_info(deimsid = saldur_deimsid, "Boundaries")
+# Prepare OSM background tile and plot
+osm <- read_osm(saldur_boundary, ext = 1.2)
+# Hillshade of Saldur river bounding box
+saldur_hs <- raster::raster("ReLTER_demo_files/saldur_hillshade.tif")
+
+tm_shape(osm) + tm_rgb() + tm_compass(type = "arrow", position = c("right", "bottom"),
+    text.size = 1) + tm_scale_bar(position = c(0.6, "bottom"), text.size = 0.8) +
+    tm_credits("Data from lcv building Copernicus", position = c("left", "top"),
+        size = 1) + tm_layout(legend.position = c("left", "bottom")) + tm_shape(saldur_hs) +
+    tm_raster(palette = "-Greys", style = "cont", legend.show = FALSE, alpha = 0.4) +
+    tm_shape(saldur_boundary) + tm_polygons(col = "skyblue", alpha = 0.2, border.col = "gray") +
+    tm_shape(saldurRiver_osmLandUse) + tm_raster(style = "cont") + tm_layout(legend.outside = TRUE)
+```
+
+![](ReLTER_demo_files/figure-gfm/ods-saldur-osm_buildings-1.png)<!-- -->
+
+# Datasets from MODIS
+
+### TODO

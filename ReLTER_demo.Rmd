@@ -257,15 +257,32 @@ tm_shape(osm) +
   tm_raster(style = "pretty", palette = "Spectral", alpha=0.75)
 ```
 
+
+### Save to a Geotiff file for use in other GIS software
+
+```{r ods-save, echo=TRUE, eval=FALSE, message=FALSE}
+# Edit here to choose your output directory 
+landcover_file <- file.path("~", "tereno_landcover.tif")
+writeRaster(tereno_landcover, landcover_file, overwrite=TRUE)
+```
+
+
 ### Copernicus building area in Saldur river catchment site
+
+This code chunk shows how to acquire OpenStreetMap building footprints
+from the ODS datasets. OSM building footprints are available by setting
+the `dataset` option to "osm_buildings". Here is an example for the 
+Saldur river basin in Italy.
+
 ```{r ods-saldur-osm_buildings}
+saldur <- get_ilter_generalinfo(country="Italy",
+                              site_name = "Saldur River Catchment")
+saldur_deimsid <- saldur$uri
 saldurRiver_osmLandUse <- get_site_ODS(
-  deimsid = "https://deims.org/97ff6180-e5d1-45f2-a559-8a7872eb26b1",
-  dataset = "osm_buildings"
+  deimsid = saldur_deimsid, dataset = "osm_buildings"
 )
 saldur_boundary <- get_site_info(
-  deimsid = "https://deims.org/97ff6180-e5d1-45f2-a559-8a7872eb26b1",
-  "Boundaries"
+  deimsid = saldur_deimsid, "Boundaries"
 )
 # Prepare OSM background tile and plot
 osm <- read_osm(saldur_boundary, ext = 1.2)
@@ -287,13 +304,6 @@ tm_shape(osm) +
   tm_layout(legend.outside = TRUE)
 ```
 
-### Save to a Geotiff file for use in other GIS software
-
-```{r ods-save, echo=TRUE, eval=FALSE, message=FALSE}
-# Edit here to choose your output directory 
-landcover_file <- file.path("~", "tereno_landcover.tif")
-writeRaster(tereno_landcover, landcover_file, overwrite=TRUE)
-```
 
 # Datasets from MODIS
 

@@ -19,10 +19,10 @@ Micha Silver and Alessandro Oggioni
         Landcover](#compare-with-corine-lower-resolution-landcover)
     -   [NDVI during the spring](#ndvi-during-the-spring)
     -   [Small eLTER sites](#small-elter-sites)
-    -   [Copernicus building area in Saldur river catchment
-        site](#copernicus-building-area-in-saldur-river-catchment-site)
     -   [Save to a Geotiff file for use in other GIS
         software](#save-to-a-geotiff-file-for-use-in-other-gis-software)
+    -   [Copernicus building area in Saldur river catchment
+        site](#copernicus-building-area-in-saldur-river-catchment-site)
 -   [Datasets from MODIS](#datasets-from-modis)
     -   [TODO](#todo)
 
@@ -40,23 +40,17 @@ Begin by installing packages and loading them.
 
 ``` r
 # These packages are required
-pkg_list  <-  c("remotes",
-             "tmap", "tmaptools",
-             "sf", "terra",
-             "OpenStreetMap",
-             "raster"
-            )
+pkg_list <- c("remotes", "tmap", "tmaptools", "sf", "terra", "OpenStreetMap", "raster")
 
 # Check if already installed, install if not
 installed_packages <- pkg_list %in% rownames(installed.packages())
 if (any(installed_packages == FALSE)) {
-  install.packages(pkg_list[!installed_packages])
+    install.packages(pkg_list[!installed_packages])
 }
 # Load Packages
-lapply(pkg_list,
-       function(p) {require(p,
-                            character.only = TRUE,
-                            quietly=TRUE)})
+lapply(pkg_list, function(p) {
+    require(p, character.only = TRUE, quietly = TRUE)
+})
 
 # Now install `ReLTER` from github and load
 remotes::install_github("oggioniale/ReLTER")
@@ -74,13 +68,11 @@ both. Note that partial matching is also supported. So
 `country_name = "Austri"` will find sites in Austria, but not Australia.
 
 ``` r
-eisen <- get_ilter_generalinfo(country="Austria",
-                              site_name = "Eisen")
+eisen <- get_ilter_generalinfo(country = "Austria", site_name = "Eisen")
 eisen_deimsid <- eisen$uri
 
-# Using abbreviated "United K" to differentiate from United States
-cairngorms <- get_ilter_generalinfo(country = "United K",
-                                   site_name = "Cairngorms National")
+# Using abbreviated 'United K' to differentiate from United States
+cairngorms <- get_ilter_generalinfo(country = "United K", site_name = "Cairngorms National")
 cairngorms_deimsid <- cairngorms$uri
 ```
 
@@ -188,16 +180,12 @@ tmap_mode("plot")
     ## tmap mode set to plotting
 
 ``` r
-# For interactive maps use:
-# tmap_mode("view")
-# Then these basemaps are available:
-# tm_basemap("Stamen.TerrainBackground") +
-# tm_basemap("OpenStreetMap") +
+# For interactive maps use: tmap_mode('view') Then these basemaps are
+# available: tm_basemap('Stamen.TerrainBackground') +
+# tm_basemap('OpenStreetMap') +
 
-tm_shape(osm) +
-    tm_rgb() + 
-tm_shape(eisen_boundary) +
-  tm_polygons(col = "skyblue", alpha = 0.25, border.col = "blue")
+tm_shape(osm) + tm_rgb() + tm_shape(eisen_boundary) + tm_polygons(col = "skyblue",
+    alpha = 0.25, border.col = "blue")
 ```
 
 ![](ReLTER_demo_files/figure-gfm/boundary-1.png)<!-- -->
@@ -208,11 +196,11 @@ The code below saves the boundary to a file for use in other GIS
 software.
 
 ``` r
-# Edit here to choose your output directory 
+# Edit here to choose your output directory
 boundary_file <- file.path("~", "eisen_boundary.gpkg")
 
-# Remove country column since it is a list
-# (Some sites extend across country boundaries)
+# Remove country column since it is a list (Some sites extend across country
+# boundaries)
 eisen_boundary <- subset(eisen_boundary, select = -country)
 st_write(eisen_boundary, dsn = boundary_file, append = FALSE)
 ```
@@ -236,13 +224,11 @@ names(eisen_contact)
 ## [6] "geoElev.min"  "geoElev.max"  "geoElev.unit"
 # No contact information :-(
 
-kiskun <- get_ilter_generalinfo(country_name = "Hungary",
-                                site_name = "KISKUN LTER")
+kiskun <- get_ilter_generalinfo(country_name = "Hungary", site_name = "KISKUN LTER")
 kiskun_deimsid <- kiskun$uri
 length(kiskun_deimsid)
 ## [1] 8
-# Multiple sites with similar name :-(
-# Which to choose? View the list...
+# Multiple sites with similar name :-( Which to choose? View the list...
 kiskun$title
 ## [1] "Kiskun Forest Reserve Sites, KISKUN LTER - Hungary"   
 ## [2] "VULCAN Kiskunsag, KISKUN LTER - Hungary"              
@@ -280,12 +266,12 @@ implemented are:
 
 -   “landcover” (Landcover at 30 meter resolution from Landsat)
 -   “clc2018” (Corine landcover from 2018)
--   “osm_buildings” (Open Street Maps buildings)
+-   “osm\_buildings” (Open Street Maps buildings)
 -   “natura2000”
--   “ndvi_spring”
--   “ndvi_summer”
--   “ndvi_autumn”
--   “ndvi_winter”
+-   “ndvi\_spring”
+-   “ndvi\_summer”
+-   “ndvi\_autumn”
+-   “ndvi\_winter”
 
 ### High resolution landcover
 
@@ -293,10 +279,8 @@ implemented are:
 # Use boundary and OSM tile from above
 eisen_landcover <- get_site_ODS(eisen_deimsid, "landcover")
 
-tm_shape(osm) +
-    tm_rgb() + 
-  tm_shape(eisen_landcover) +
-  tm_raster(style = "pretty", palette = "RdYlBu", alpha=0.75)
+tm_shape(osm) + tm_rgb() + tm_shape(eisen_landcover) + tm_raster(style = "pretty",
+    palette = "RdYlBu", alpha = 0.75)
 ```
 
     ## stars object downsampled to 1089 by 918 cells. See tm_shape manual (argument raster.downsample)
@@ -308,10 +292,8 @@ tm_shape(osm) +
 ``` r
 eisen_corine <- get_site_ODS(eisen_deimsid, "clc2018")
 
-tm_shape(osm) +
-    tm_rgb() + 
-  tm_shape(eisen_corine) +
-  tm_raster(style = "pretty", palette = "Spectral", alpha=0.75)
+tm_shape(osm) + tm_rgb() + tm_shape(eisen_corine) + tm_raster(style = "pretty", palette = "Spectral",
+    alpha = 0.75)
 ```
 
     ## stars object downsampled to 1089 by 918 cells. See tm_shape manual (argument raster.downsample)
@@ -325,11 +307,9 @@ values, divide raster by 255
 
 ``` r
 eisen_ndvi <- get_site_ODS(eisen_deimsid, "ndvi_spring")
-eisen_ndvi <- eisen_ndvi / 255
-tm_shape(osm) +
-    tm_rgb() + 
-  tm_shape(eisen_ndvi) +
-  tm_raster(style = "pretty", palette = "RdYlGn", alpha=0.75)
+eisen_ndvi <- eisen_ndvi/255
+tm_shape(osm) + tm_rgb() + tm_shape(eisen_ndvi) + tm_raster(style = "pretty", palette = "RdYlGn",
+    alpha = 0.75)
 ```
 
     ## stars object downsampled to 1089 by 918 cells. See tm_shape manual (argument raster.downsample)
@@ -343,18 +323,15 @@ This code examines the Tereno site at Harsleben.
 
 ``` r
 # Acquire Tereno ID and boundary
-tereno <- get_ilter_generalinfo(country_name = "Germany",
-                                 site_name = "Tereno - Harsleben")
+tereno <- get_ilter_generalinfo(country_name = "Germany", site_name = "Tereno - Harsleben")
 tereno_deimsid <- tereno$uri
 tereno_boundary <- get_site_info(tereno_deimsid, "Boundaries")
 
 # Prepare new OSM background and plot
 osm <- read_osm(tereno_boundary, ext = 1.2)
 tereno_ndvi <- get_site_ODS(tereno_deimsid, "ndvi_autumn")
-tm_shape(osm) +
-    tm_rgb() + 
-  tm_shape(tereno_ndvi) +
-  tm_raster(style = "pretty", palette = "RdYlGn", alpha=0.75)
+tm_shape(osm) + tm_rgb() + tm_shape(tereno_ndvi) + tm_raster(style = "pretty", palette = "RdYlGn",
+    alpha = 0.75)
 ```
 
 ![](ReLTER_demo_files/figure-gfm/ods-tereno-1.png)<!-- -->
@@ -363,64 +340,55 @@ Again compare Landsat based landcover (30 m.) with Corine 2018 (100 m.)
 
 ``` r
 tereno_landcover <- get_site_ODS(tereno_deimsid, "landcover")
-tm_shape(osm) +
-    tm_rgb() + 
-  tm_shape(tereno_landcover) +
-  tm_raster(style = "pretty", palette = "Spectral", alpha=0.75)
+tm_shape(osm) + tm_rgb() + tm_shape(tereno_landcover) + tm_raster(style = "pretty",
+    palette = "Spectral", alpha = 0.75)
 ```
 
 ![](ReLTER_demo_files/figure-gfm/ods-tereno-landcover-1.png)<!-- -->
 
 ``` r
 tereno_corine <- get_site_ODS(tereno_deimsid, "clc2018")
-tm_shape(osm) +
-    tm_rgb() + 
-  tm_shape(tereno_corine) +
-  tm_raster(style = "pretty", palette = "Spectral", alpha=0.75)
+tm_shape(osm) + tm_rgb() + tm_shape(tereno_corine) + tm_raster(style = "pretty",
+    palette = "Spectral", alpha = 0.75)
 ```
 
 ![](ReLTER_demo_files/figure-gfm/ods-tereno-landcover-2.png)<!-- -->
 
-### Copernicus building area in Saldur river catchment site
+### Save to a Geotiff file for use in other GIS software
 
 ``` r
-saldurRiver_osmLandUse <- get_site_ODS(
-  deimsid = "https://deims.org/97ff6180-e5d1-45f2-a559-8a7872eb26b1",
-  dataset = "osm_buildings"
-)
-saldur_boundary <- get_site_info(
-  deimsid = "https://deims.org/97ff6180-e5d1-45f2-a559-8a7872eb26b1",
-  "Boundaries"
-)
+# Edit here to choose your output directory
+landcover_file <- file.path("~", "tereno_landcover.tif")
+writeRaster(tereno_landcover, landcover_file, overwrite = TRUE)
+```
+
+### Copernicus building area in Saldur river catchment site
+
+This code chunk shows how to acquire OpenStreetMap building footprints
+from the ODS datasets. OSM building footprints are available by setting
+the `dataset` option to “osm\_buildings”. Here is an example for the
+Saldur river basin in Italy.
+
+``` r
+saldur <- get_ilter_generalinfo(country = "Italy", site_name = "Saldur River Catchment")
+saldur_deimsid <- saldur$uri
+saldurRiver_osmLandUse <- get_site_ODS(deimsid = saldur_deimsid, dataset = "osm_buildings")
+saldur_boundary <- get_site_info(deimsid = saldur_deimsid, "Boundaries")
 # Prepare OSM background tile and plot
 osm <- read_osm(saldur_boundary, ext = 1.2)
 # Hillshade of Saldur river bounding box
 saldur_hs <- raster::raster("ReLTER_demo_files/saldur_hillshade.tif")
 
-tm_shape(osm) +
-  tm_rgb() +
-  tm_compass(type = "arrow", position = c("right", "bottom"), text.size = 1) +
-  tm_scale_bar(position = c(0.6, "bottom"), text.size = .8) +
-  tm_credits("Data from lcv building Copernicus", position = c("left", "top"), size = 1) +
-  tm_layout(legend.position = c("left", "bottom")) +
-  tm_shape(saldur_hs) +
-  tm_raster(palette = "-Greys", style = "cont", legend.show = FALSE, alpha = .4) +
-  tm_shape(saldur_boundary) +
-  tm_polygons(col = "skyblue", alpha = 0.2, border.col = "gray") +
-  tm_shape(saldurRiver_osmLandUse) +
-  tm_raster(style = "cont") +
-  tm_layout(legend.outside = TRUE)
+tm_shape(osm) + tm_rgb() + tm_compass(type = "arrow", position = c("right", "bottom"),
+    text.size = 1) + tm_scale_bar(position = c(0.6, "bottom"), text.size = 0.8) +
+    tm_credits("Data from lcv building Copernicus", position = c("left", "top"),
+        size = 1) + tm_layout(legend.position = c("left", "bottom")) + tm_shape(saldur_hs) +
+    tm_raster(palette = "-Greys", style = "cont", legend.show = FALSE, alpha = 0.4) +
+    tm_shape(saldur_boundary) + tm_polygons(col = "skyblue", alpha = 0.2, border.col = "gray") +
+    tm_shape(saldurRiver_osmLandUse) + tm_raster(style = "cont") + tm_layout(legend.outside = TRUE)
 ```
 
 ![](ReLTER_demo_files/figure-gfm/ods-saldur-osm_buildings-1.png)<!-- -->
-
-### Save to a Geotiff file for use in other GIS software
-
-``` r
-# Edit here to choose your output directory 
-landcover_file <- file.path("~", "tereno_landcover.tif")
-writeRaster(tereno_landcover, landcover_file, overwrite=TRUE)
-```
 
 # Datasets from MODIS
 
