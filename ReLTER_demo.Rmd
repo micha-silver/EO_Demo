@@ -46,8 +46,8 @@ lapply(pkg_list,
 remotes::install_github("oggioniale/ReLTER")
 library(ReLTER)
 
-# Where to save outputs
-Output_dir = "~/work/tmp/EO_Demo"
+# Choose where to save outputs
+Output_dir = "./Output"
 ```
 
 # Query DEIMS SDR
