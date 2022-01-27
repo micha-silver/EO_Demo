@@ -39,4 +39,9 @@ vignettes/*.pdf
 .Renviron
 
 finalize.R
-credentials.rds
+earthdata_credentials.rds
+Output
+ReLTER_demo.pdf
+ReLTER_demo.html
+ReLTER_demo_files/figure-html/
+ReLTER_demo_files/figure-latex/

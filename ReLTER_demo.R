@@ -21,11 +21,14 @@ lapply(pkg_list,
                             quietly=TRUE)})
 
 # Now install `ReLTER` from github and load
-remotes::install_github("oggioniale/ReLTER")
+remotes::install_github("oggioniale/ReLTER@dev")
 library(ReLTER)
 
+# Choose where to save outputs
+Output_dir = "./Output"
+
 eisen <- get_ilter_generalinfo(country="Austria",
-                              site_name = "Eisen")
+                              site_name = "LTSER Platform Eisen")
 eisen_deimsid <- eisen$uri
 
 # Using abbreviated "United K" to differentiate from United States
@@ -38,7 +41,6 @@ response$researchTopics
 
 response <- get_site_info(cairngorms_deimsid, category = "Affiliations")
 response$affiliation.projects
-
 
 # Acquire boundary for site
 eisen_boundary <- get_site_info(eisen_deimsid, "Boundaries")
@@ -58,13 +60,13 @@ tm_shape(osm) +
 tm_shape(eisen_boundary) +
   tm_polygons(col = "skyblue", alpha = 0.25, border.col = "blue")
 
-## # Edit here to choose your output directory
-## boundary_file <- file.path("~", "eisen_boundary.gpkg")
-## 
-## # Remove country column since it is a list
-## # (Some sites extend across country boundaries)
-## eisen_boundary <- subset(eisen_boundary, select = -country)
-## st_write(eisen_boundary, dsn = boundary_file, append = FALSE)
+# Edit here to choose your output directory 
+boundary_file <- file.path(Output_dir, "eisen_boundary.gpkg")
+
+# Remove country column since it is a list
+# (Some sites extend across country boundaries)
+eisen_boundary <- subset(eisen_boundary, select = -country)
+st_write(eisen_boundary, dsn = boundary_file, append = FALSE)
 
 eisen_contact <- get_site_info(eisen_deimsid, "Contact")
 names(eisen_contact)
@@ -98,14 +100,14 @@ tm_shape(osm) +
   tm_shape(eisen_corine) +
   tm_raster(style = "pretty", palette = "Spectral", alpha=0.75)
 
+# Takes several minutes
 eisen_ndvi <- get_site_ODS(eisen_deimsid, "ndvi_spring")
-eisen_ndvi <- eisen_ndvi / 255
 tm_shape(osm) +
 	tm_rgb() + 
   tm_shape(eisen_ndvi) +
   tm_raster(style = "pretty", palette = "RdYlGn", alpha=0.75)
 
-# Acquire Tereno ID and boundary
+# Acquire Tereno DEIMS ID and boundary
 tereno <- get_ilter_generalinfo(country_name = "Germany",
                                  site_name = "Tereno - Harsleben")
 tereno_deimsid <- tereno$uri
@@ -131,7 +133,7 @@ tm_shape(osm) +
   tm_raster(style = "pretty", palette = "Spectral", alpha=0.75)
 
 ## # Edit here to choose your output directory
-## landcover_file <- file.path("~", "tereno_landcover.tif")
+## landcover_file <- file.path(Output_dir, "tereno_landcover.tif")
 ## writeRaster(tereno_landcover, landcover_file, overwrite=TRUE)
 
 saldur <- get_ilter_generalinfo(country="Italy",
@@ -161,3 +163,37 @@ tm_shape(osm) +
   tm_shape(saldurRiver_osmLandUse) +
   tm_raster(style = "cont") +
   tm_layout(legend.outside = TRUE)
+
+source("~/work/EU_Projects/ReLTER/R/get_site_MODIS.R")
+get_site_MODIS(show_products = TRUE)
+get_site_MODIS(show_bands = "Vegetation_Indexes_Monthly_1Km (M*D13A3)" )
+
+# Username and password saved in advance
+# For example:
+
+# creds <- list("username"="homer", password="Simpsons")
+# saveRDS(creds, "earthdata_credentials.rds)
+
+# Then...
+creds <- readRDS("earthdata_credentials.rds")
+
+# Set which product and which bands to get
+product = "Vegetation_Indexes_Monthly_1Km (M*D13A3)"
+bands = "NDVI"    # Also EVI is available
+
+eisen_ndvi <- get_site_MODIS(eisen_deimsid,               # Which site
+                          earthdata_user = creds$username, # From above
+                          earthdata_passwd = creds$password,
+                          product = product,
+                          bands = bands,
+                          from_date = "2020.01.01", 
+                          to_date =  "2020.12.31",        # From-To dates
+                          scale = TRUE,          # Rescale COG back to real values
+                          out_folder = Output_dir,        # Where to save outputs
+                          save_ts_dir = Output_dir
+                          )
+
+# Plot was saved to:
+plot_file <- paste("time_series", paste(bands, collapse="_"), sep="_")
+plot_path <- file.path(Output_dir, paste0(plot_file, ".png"))
+knitr::include_graphics(plot_path)

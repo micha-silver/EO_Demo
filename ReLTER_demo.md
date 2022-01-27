@@ -1,7 +1,7 @@
 Demonstrating the Use of the `ReLTER` package for Earth Observation (EO)
 ================
 Micha Silver and Alessandro Oggioni
-10/01/2022
+1/02/2022
 
 -   [Install and load packages](#install-and-load-packages)
 -   [Query DEIMS SDR](#query-deims-sdr)
@@ -24,7 +24,12 @@ Micha Silver and Alessandro Oggioni
     -   [Copernicus building area in Saldur river catchment
         site](#copernicus-building-area-in-saldur-river-catchment-site)
 -   [Datasets from MODIS](#datasets-from-modis)
-    -   [TODO](#todo)
+    -   [What Products are available? What
+        bands?](#what-products-are-available-what-bands)
+    -   [Registering on EarthData
+        website](#registering-on-earthdata-website)
+    -   [Download a time series of MODIS NDVI for
+        Eisenwurzen](#download-a-time-series-of-modis-ndvi-for-eisenwurzen)
 
 This code demonstrates the use of the new `ReLTER` package. For more
 details, see Allesando Oggioni’s [github
@@ -53,8 +58,11 @@ lapply(pkg_list, function(p) {
 })
 
 # Now install `ReLTER` from github and load
-remotes::install_github("oggioniale/ReLTER")
+remotes::install_github("oggioniale/ReLTER@dev")
 library(ReLTER)
+
+# Choose where to save outputs
+Output_dir = "./Output"
 ```
 
 # Query DEIMS SDR
@@ -68,7 +76,7 @@ both. Note that partial matching is also supported. So
 `country_name = "Austri"` will find sites in Austria, but not Australia.
 
 ``` r
-eisen <- get_ilter_generalinfo(country = "Austria", site_name = "Eisen")
+eisen <- get_ilter_generalinfo(country = "Austria", site_name = "LTSER Platform Eisen")
 eisen_deimsid <- eisen$uri
 
 # Using abbreviated 'United K' to differentiate from United States
@@ -197,13 +205,18 @@ software.
 
 ``` r
 # Edit here to choose your output directory
-boundary_file <- file.path("~", "eisen_boundary.gpkg")
+boundary_file <- file.path(Output_dir, "eisen_boundary.gpkg")
 
 # Remove country column since it is a list (Some sites extend across country
 # boundaries)
 eisen_boundary <- subset(eisen_boundary, select = -country)
 st_write(eisen_boundary, dsn = boundary_file, append = FALSE)
 ```
+
+    ## Deleting layer `eisen_boundary' using driver `GPKG'
+    ## Writing layer `eisen_boundary' to data source 
+    ##   `./Output/eisen_boundary.gpkg' using driver `GPKG'
+    ## Writing 1 features with 7 fields and geometry type Polygon.
 
 # Dependency on quality of data in DEIMS SDR
 
@@ -302,17 +315,18 @@ tm_shape(osm) + tm_rgb() + tm_shape(eisen_corine) + tm_raster(style = "pretty", 
 
 ### NDVI during the spring
 
-The COG format converts raster data to integer. To restore normal NDVI
-values, divide raster by 255
+The COG format converts raster data to integer.
 
 ``` r
+# Takes several minutes
 eisen_ndvi <- get_site_ODS(eisen_deimsid, "ndvi_spring")
-eisen_ndvi <- eisen_ndvi/255
 tm_shape(osm) + tm_rgb() + tm_shape(eisen_ndvi) + tm_raster(style = "pretty", palette = "RdYlGn",
     alpha = 0.75)
 ```
 
     ## stars object downsampled to 1089 by 918 cells. See tm_shape manual (argument raster.downsample)
+
+    ## Variable(s) "NA" contains positive and negative values, so midpoint is set to 0. Set midpoint = NA to show the full spectrum of the color palette.
 
 ![](ReLTER_demo_files/figure-gfm/ods-ndvi-1.png)<!-- -->
 
@@ -322,7 +336,7 @@ ODS data layers are at 30 meter resolution, suitable for small sites.
 This code examines the Tereno site at Harsleben.
 
 ``` r
-# Acquire Tereno ID and boundary
+# Acquire Tereno DEIMS ID and boundary
 tereno <- get_ilter_generalinfo(country_name = "Germany", site_name = "Tereno - Harsleben")
 tereno_deimsid <- tereno$uri
 tereno_boundary <- get_site_info(tereno_deimsid, "Boundaries")
@@ -358,7 +372,7 @@ tm_shape(osm) + tm_rgb() + tm_shape(tereno_corine) + tm_raster(style = "pretty",
 
 ``` r
 # Edit here to choose your output directory
-landcover_file <- file.path("~", "tereno_landcover.tif")
+landcover_file <- file.path(Output_dir, "tereno_landcover.tif")
 writeRaster(tereno_landcover, landcover_file, overwrite = TRUE)
 ```
 
@@ -392,4 +406,197 @@ tm_shape(osm) + tm_rgb() + tm_compass(type = "arrow", position = c("right", "bot
 
 # Datasets from MODIS
 
-### TODO
+This capability of `ReLTER` relies on another package `MODIStsp` L.
+Busetto, L. Ranghetti (2016) *MODIStsp: An R package for automatic
+preprocessing of MODIS Land Products time series*, Computers &
+Geosciences, Volume 97, Pages 40-48, ISSN 0098-3004,
+<https://doi.org/10.1016/j.cageo.2016.08.020>. URL
+<https://github.com/ropensci/MODIStsp/>.
+
+### What Products are available? What bands?
+
+``` r
+source("~/work/EU_Projects/ReLTER/R/get_site_MODIS.R")
+get_site_MODIS(show_products = TRUE)
+```
+
+    ##   [1] "Surf_Ref_8Days_500m (M*D09A1)"                   
+    ##   [2] "Surf_Ref_Daily_005dg (M*D09CMG)"                 
+    ##   [3] "Surf_Ref_Daily_500m (M*D09GA)"                   
+    ##   [4] "Surf_Ref_Daily_250m (M*D09GQ)"                   
+    ##   [5] "Surf_Ref_8Days_250m (M*D09Q1)"                   
+    ##   [6] "Ocean_Ref_Daily_1Km (M*DOCGA)"                   
+    ##   [7] "Therm_Daily_1Km (M*DTBGA)"                       
+    ##   [8] "Snow_Cov_Daily_500m (M*D10A1)"                   
+    ##   [9] "Snow_Cov_8-Day_500m (M*D10_A2)"                  
+    ##  [10] "Snow_Cov_Day_0.05Deg (M*D10C1)"                  
+    ##  [11] "Snow_Cov_8-Day0.05Deg CMG (M*D10C2)"             
+    ##  [12] "Snow_Cov_Month_0.05Deg CMG (M*D10CM)"            
+    ##  [13] "Surf_Temp_Daily_005dg (M*D11C1)"                 
+    ##  [14] "Surf_Temp_Daily_1Km (M*D11A1)"                   
+    ##  [15] "Surf_Temp_8Days_1Km (M*D11A2)"                   
+    ##  [16] "Surf_Temp_Daily_GridSin (M*D11B1)"               
+    ##  [17] "Surf_Temp_8Days_GridSin (M*D11B2)"               
+    ##  [18] "Surf_Temp_Monthly_GridSin (M*D11B3)"             
+    ##  [19] "Surf_Temp_8Days_005dg (M*D11C2)"                 
+    ##  [20] "Surf_Temp_Monthly_005dg (M*D11C3)"               
+    ##  [21] "LST_3band_emissivity_Daily_1km (M*D21A1D)"       
+    ##  [22] "LST_3band_emissivity_Daily_1km_night (M*D21A1N)" 
+    ##  [23] "LST_3band_emissivity_8day_1km (M*D21A2)"         
+    ##  [24] "BRDF_Albedo_ModelPar_Daily_500m (MCD43A1)"       
+    ##  [25] "BRDF_Albedo_Quality_Daily_500m (MCD43A2)"        
+    ##  [26] "Albedo_Daily_500m (MCD43A3)"                     
+    ##  [27] "BRDF_Adj_Refl_Daily_500m (MCD43A4)"              
+    ##  [28] "BRDF_Albedo_ModelPar_Daily_005dg (MCD43C1)"      
+    ##  [29] "BRDF_Albedo_Quality_Daily_005dg (MCD43C2)"       
+    ##  [30] "Albedo_Daily_005dg (MCD43C3)"                    
+    ##  [31] "BRDF_Adj_Refl_16Day_005dg (MCD43C4)"             
+    ##  [32] "AlbPar_1_B1_Daily_30ArcSec (MCD43D01)"           
+    ##  [33] "AlbPar_2_B1_Daily_30ArcSec (MCD43D02)"           
+    ##  [34] "AlbPar_3_B1_Daily_30ArcSec (MCD43D03)"           
+    ##  [35] "AlbPar_1_B2_Daily_30ArcSec (MCD43D04)"           
+    ##  [36] "AlbPar_2_B2_Daily_30ArcSec (MCD43D05)"           
+    ##  [37] "AlbPar_3_B2_Daily_30ArcSec (MCD43D06)"           
+    ##  [38] "AlbPar_1_B3_Daily_30ArcSec (MCD43D07)"           
+    ##  [39] "AlbPar_2_B3_Daily_30ArcSec (MCD43D08)"           
+    ##  [40] "AlbPar_3_B3_Daily_30ArcSec (MCD43D09)"           
+    ##  [41] "AlbPar_1_B4_Daily_30ArcSec (MCD43D10)"           
+    ##  [42] "AlbPar_2_B4_Daily_30ArcSec (MCD43D11)"           
+    ##  [43] "AlbPar_3_B4_Daily_30ArcSec (MCD43D12)"           
+    ##  [44] "AlbPar_1_B4_Daily_30ArcSec (MCD43D13)"           
+    ##  [45] "AlbPar_2_B4_Daily_30ArcSec (MCD43D14)"           
+    ##  [46] "AlbPar_3_B4_Daily_30ArcSec (MCD43D15)"           
+    ##  [47] "AlbPar_1_B5_Daily_30ArcSec (MCD43D16)"           
+    ##  [48] "AlbPar_2_B5_Daily_30ArcSec (MCD43D17)"           
+    ##  [49] "AlbPar_3_B5_Daily_30ArcSec (MCD43D18)"           
+    ##  [50] "AlbPar_1_B6_Daily_30ArcSec (MCD43D19)"           
+    ##  [51] "AlbPar_2_B6_Daily_30ArcSec (MCD43D20)"           
+    ##  [52] "AlbPar_3_B6_Daily_30ArcSec (MCD43D21)"           
+    ##  [53] "AlbPar_1_Vis_Daily_30ArcSec (MCD43D22)"          
+    ##  [54] "AlbPar_2_Vis_Daily_30ArcSec (MCD43D23)"          
+    ##  [55] "AlbPar_3_Vis_Daily_30ArcSec (MCD43D24)"          
+    ##  [56] "AlbPar_1_NIR_Daily_30ArcSec (MCD43D25)"          
+    ##  [57] "AlbPar_2_NIR_Daily_30ArcSec (MCD43D26)"          
+    ##  [58] "AlbPar_3_NIR_Daily_30ArcSec (MCD43D27)"          
+    ##  [59] "AlbPar_1_SWIR_Daily_30ArcSec (MCD43D28)"         
+    ##  [60] "AlbPar_2_SWIR_Daily_30ArcSec (MCD43D29)"         
+    ##  [61] "AlbPar_3_SWIR_Daily_30ArcSec (MCD43D30)"         
+    ##  [62] "BRDF_Albedo_Quality_Daily_30ArcSec (MCD43D31)"   
+    ##  [63] "BRDF_Albedo_SolNoon_Daily_30ArcSec (MCD43D32)"   
+    ##  [64] "Alb_ValObs_B1_Daily_30ArcSec (MCD43D33)"         
+    ##  [65] "Alb_ValObs_B2_Daily_30ArcSec (MCD43D34)"         
+    ##  [66] "Alb_ValObs_B3_Daily_30ArcSec (MCD43D35)"         
+    ##  [67] "Alb_ValObs_B4_Daily_30ArcSec (MCD43D36)"         
+    ##  [68] "Alb_ValObs_B5_Daily_30ArcSec (MCD43D37)"         
+    ##  [69] "Alb_ValObs_B6_Daily_30ArcSec (MCD43D38)"         
+    ##  [70] "Alb_ValObs_B7_Daily_30ArcSec (MCD43D39)"         
+    ##  [71] "BRDF_Albedo_Snow_Daily_30ArcSec (MCD43D40)"      
+    ##  [72] "BRDF_Alb_Unc_Daily_30ArcSec (MCD43D41)"          
+    ##  [73] "BRDF_Alb_BSA_B1_Daily_30ArcSec (MCD43D42)"       
+    ##  [74] "BRDF_Alb_BSA_B2_Daily_30ArcSec (MCD43D43)"       
+    ##  [75] "BRDF_Alb_BSA_B3_Daily_30ArcSec (MCD43D44)"       
+    ##  [76] "BRDF_Alb_BSA_B4_Daily_30ArcSec (MCD43D45)"       
+    ##  [77] "BRDF_Alb_BSA_B5_Daily_30ArcSec (MCD43D46)"       
+    ##  [78] "BRDF_Alb_BSA_B6_Daily_30ArcSec (MCD43D47)"       
+    ##  [79] "BRDF_Alb_BSA_B7_Daily_30ArcSec (MCD43D48)"       
+    ##  [80] "BRDF_Alb_BSA_Vis_Daily_30ArcSec (MCD43D49)"      
+    ##  [81] "BRDF_Alb_BSA_NIR_Daily_30ArcSec (MCD43D50)"      
+    ##  [82] "BRDF_Alb_BSA_SWIR_Daily_30ArcSec (MCD43D51)"     
+    ##  [83] "BRDF_Alb_WSA_B1_Daily_30ArcSec (MCD43D52)"       
+    ##  [84] "BRDF_Alb_WSA_B2_Daily_30ArcSec (MCD43D53)"       
+    ##  [85] "BRDF_Alb_WSA_B3_Daily_30ArcSec (MCD43D54)"       
+    ##  [86] "BRDF_Alb_WSA_B4_Daily_30ArcSec (MCD43D55)"       
+    ##  [87] "BRDF_Alb_WSA_B5_Daily_30ArcSec (MCD43D56)"       
+    ##  [88] "BRDF_Alb_WSA_B6_Daily_30ArcSec (MCD43D57)"       
+    ##  [89] "BRDF_Alb_WSA_B7_Daily_30ArcSec (MCD43D58)"       
+    ##  [90] "BRDF_Alb_WSA_Vis_Daily_30ArcSec (MCD43D59)"      
+    ##  [91] "BRDF_Alb_WSA_NIR_Daily_30ArcSec (MCD43D60)"      
+    ##  [92] "BRDF_Alb_WSA_SWIR_Daily_30ArcSec (MCD43D61)"     
+    ##  [93] "BRDF_Albedo_NBAR_Band1_Daily_30ArcSec (MCD43D62)"
+    ##  [94] "BRDF_Albedo_NBAR_Band2_Daily_30ArcSec (MCD43D63)"
+    ##  [95] "BRDF_Albedo_NBAR_Band3_Daily_30ArcSec (MCD43D64)"
+    ##  [96] "BRDF_Albedo_NBAR_Band4_Daily_30ArcSec (MCD43D65)"
+    ##  [97] "BRDF_Albedo_NBAR_Band5_Daily_30ArcSec (MCD43D66)"
+    ##  [98] "BRDF_Albedo_NBAR_Band6_Daily_30ArcSec (MCD43D67)"
+    ##  [99] "BRDF_Albedo_NBAR_Band7_Daily_30ArcSec (MCD43D68)"
+    ## [100] "Vegetation_Indexes_16Days_500m (M*D13A1)"        
+    ## [101] "Vegetation_Indexes_16Days_1Km (M*D13A2)"         
+    ## [102] "Vegetation_Indexes_Monthly_1Km (M*D13A3)"        
+    ## [103] "Vegetation_Indexes_16Days_005dg (M*D13C1)"       
+    ## [104] "Vegetation_Indexes_Monthly_005dg (M*D13C2)"      
+    ## [105] "Vegetation Indexes_16Days_250m (M*D13Q1)"        
+    ## [106] "LAI_8Days_500m (MCD15A2H)"                       
+    ## [107] "LAI_4Days_500m (MCD15A3H)"                       
+    ## [108] "LAI_8Days_500m (M*D15A2H)"                       
+    ## [109] "Net_ET_8Day_500m (M*D16A2)"                      
+    ## [110] "Net_ETgf_8Day_500m (M*D16A2GF)"                  
+    ## [111] "Net_ETgf_Yearly_500m (M*D16A3GF)"                
+    ## [112] "Gross_PP_8Days_500m (M*D17A2H)"                  
+    ## [113] "Gross_PP_GapFil_8Days_500m (M*D17A2HGF)"         
+    ## [114] "Net_PP_GapFil_Yearly_500m (M*D17A3HGF)"          
+    ## [115] "Veg_Cont_Fields_Yearly_250m (MOD44B)"            
+    ## [116] "Land_Wat_Mask_Yearly_250m (MOD44W)"              
+    ## [117] "Burned_Monthly_500m (MCD64A1)"                   
+    ## [118] "ThermalAn_Fire_Daily_1Km (M*D14A1)"              
+    ## [119] "ThermalAn_Fire_8Days_1Km (M*D14A2)"              
+    ## [120] "LandCover_Type_Yearly_005dg (MCD12C1)"           
+    ## [121] "LandCover_Type_Yearly_500m (MCD12Q1)"            
+    ## [122] "LandCover_Dynamics_Yearly_500m (MCD12Q2)"        
+    ## [123] "Dwnwrd_Srw_Rad_3h_005dg (MCD18A1)"               
+    ## [124] "Dwnwrd_PAR_3h_005dg (MCD18A2)"                   
+    ## [125] "MAIA_Land_Surf_BRF (MCD19A1)"                    
+    ## [126] "MAIA_Land_AOT_daily (MCD19A2)"
+
+    ## NULL
+
+``` r
+get_site_MODIS(show_bands = "Vegetation_Indexes_Monthly_1Km (M*D13A3)")
+```
+
+    ##  [1] "NDVI"     "EVI"      "VI_QA"    "b1_Red"   "b2_NIR"   "b3_Blue" 
+    ##  [7] "b7_SWIR"  "View_Zen" "Sun_Zen"  "Rel_Az"   "Rely"
+
+    ## NULL
+
+### Registering on EarthData website
+
+To acquire MODIS data you must be registered at:
+<https://urs.earthdata.nasa.gov/> Then use your earthdata username and
+password in the code below
+
+``` r
+# Username and password saved in advance For example:
+
+# creds <- list('username'='homer', password='Simpsons') saveRDS(creds,
+# 'earthdata_credentials.rds)
+
+# Then...
+creds <- readRDS("earthdata_credentials.rds")
+```
+
+### Download a time series of MODIS NDVI for Eisenwurzen
+
+``` r
+# Set which product and which bands to get
+product = "Vegetation_Indexes_Monthly_1Km (M*D13A3)"
+bands = "NDVI"    # Also EVI is available
+
+eisen_ndvi <- get_site_MODIS(eisen_deimsid,               # Which site
+                          earthdata_user = creds$username, # From above
+                          earthdata_passwd = creds$password,
+                          product = product,
+                          bands = bands,
+                          from_date = "2020.01.01", 
+                          to_date =  "2020.12.31",        # From-To dates
+                          scale = TRUE,          # Rescale COG back to real values
+                          out_folder = Output_dir,        # Where to save outputs
+                          save_ts_dir = Output_dir
+                          )
+
+# Plot was saved to:
+plot_file <- paste("time_series", paste(bands, collapse="_"), sep="_")
+plot_path <- file.path(Output_dir, paste0(plot_file, ".png"))
+knitr::include_graphics(plot_path)
+```
+
+<img src="./Output/time_series_NDVI.png" width="400" />
