@@ -40,7 +40,6 @@ vignettes/*.pdf
 
 finalize.R
 earthdata_credentials.rds
-Output
 ReLTER_demo.pdf
 ReLTER_demo.html
 ReLTER_demo_files/figure-html/
