@@ -45,6 +45,9 @@ lapply(pkg_list,
 # Now install `ReLTER` from github and load
 remotes::install_github("oggioniale/ReLTER")
 library(ReLTER)
+
+# Where to save outputs
+Output_dir = "~/work/tmp/EO_Demo"
 ```
 
 # Query DEIMS SDR
@@ -59,7 +62,7 @@ will find sites in Austria, but not Australia.
 
 ```{r deims}
 eisen <- get_ilter_generalinfo(country="Austria",
-                              site_name = "Eisen")
+                              site_name = "LTSER Platform Eisen")
 eisen_deimsid <- eisen$uri
 
 # Using abbreviated "United K" to differentiate from United States
@@ -128,7 +131,7 @@ The code below saves the boundary to a file for use in other GIS software.
 
 ```{r st_write, message=FALSE, eval=FALSE}
 # Edit here to choose your output directory 
-boundary_file <- file.path("~", "eisen_boundary.gpkg")
+boundary_file <- file.path(Output_dir, "eisen_boundary.gpkg")
 
 # Remove country column since it is a list
 # (Some sites extend across country boundaries)
@@ -262,7 +265,7 @@ tm_shape(osm) +
 
 ```{r ods-save, echo=TRUE, eval=FALSE, message=FALSE}
 # Edit here to choose your output directory 
-landcover_file <- file.path("~", "tereno_landcover.tif")
+landcover_file <- file.path(Output_dir, "tereno_landcover.tif")
 writeRaster(tereno_landcover, landcover_file, overwrite=TRUE)
 ```
 
@@ -304,7 +307,51 @@ tm_shape(osm) +
   tm_layout(legend.outside = TRUE)
 ```
 
-
 # Datasets from MODIS
 
-### TODO
+This capability of `ReLTER` relies on another package `MODIStsp`
+  L. Busetto, L. Ranghetti (2016) 
+  *MODIStsp: An R package for automatic preprocessing of MODIS Land Products time series*, 
+  Computers & Geosciences, Volume 97, Pages 40-48, ISSN 0098-3004,
+  https://doi.org/10.1016/j.cageo.2016.08.020. URL
+  https://github.com/ropensci/MODIStsp/.
+
+### What Products are available? What bands?
+
+```{r modis-products}
+get_site_MODIS(show_products = TRUE)
+get_site_MODIS(show_bands = "Vegetation_Indexes_Monthly_1Km (M*D13A3)" )
+```
+
+### Registering on EarthData website
+
+To acquire MODIS data you must be registered at:
+https://urs.earthdata.nasa.gov/
+Then use your earthdata username and password in the code below
+
+```{r earthdata}
+# Username and password saved in advance
+# For example:
+# creds <- list("username"="homer", password="Simpsons")
+# saveRDS(creds, "earthdata_credentials.rds)
+# Then...
+creds <- readRDS("earthdata_credentials.rds")
+```
+
+### Download a time series of MODIS NDVI for Eisenwurzen
+
+```{r modis-ndvi}
+# Takes several minutes
+eisen_ndvi <- get_site_MODIS(eisen_deimsid,               # Which site
+                          earthdata_user = creds$username, # From above
+                          earthdata_passwd = creds$password,
+                          product = "Vegetation_Indexes_Monthly_1Km (M*D13A3)",
+                          bands = "NDVI",                 # Also EVI is available
+                          from_date = "2020.03.01", 
+                          to_date =  "2020.11.30",        # From-To dates
+                          scale = TRUE,          # Rescale COG back to real values
+                          out_folder = Output_dir,        # Where to save outputs
+                          save_ts_dir = Output_dir
+                          )
+```
+
