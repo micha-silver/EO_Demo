@@ -58,11 +58,16 @@ lapply(pkg_list, function(p) {
 })
 
 # Now install `ReLTER` from github and load
-remotes::install_github("oggioniale/ReLTER@dev")
+remotes::install_github("oggioniale/ReLTER")
+# If you want the development version, with latest functions:
+# remotes::install_github('oggioniale/ReLTER@dev')
 library(ReLTER)
 
 # Choose where to save outputs
 Output_dir = "./Output"
+if (!dir.exists(Output_dir)) {
+    dir.create(Output_dir)
+}
 ```
 
 # Query DEIMS SDR
@@ -325,8 +330,6 @@ tm_shape(osm) + tm_rgb() + tm_shape(eisen_ndvi) + tm_raster(style = "pretty", pa
 ```
 
     ## stars object downsampled to 1089 by 918 cells. See tm_shape manual (argument raster.downsample)
-
-    ## Variable(s) "NA" contains positive and negative values, so midpoint is set to 0. Set midpoint = NA to show the full spectrum of the color palette.
 
 ![](ReLTER_demo_files/figure-gfm/ods-ndvi-1.png)<!-- -->
 

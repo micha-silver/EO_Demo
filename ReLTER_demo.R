@@ -21,11 +21,16 @@ lapply(pkg_list,
                             quietly=TRUE)})
 
 # Now install `ReLTER` from github and load
-remotes::install_github("oggioniale/ReLTER@dev")
+remotes::install_github("oggioniale/ReLTER")
+# If you want the development version, with latest functions:
+#remotes::install_github("oggioniale/ReLTER@dev")
 library(ReLTER)
 
 # Choose where to save outputs
 Output_dir = "./Output"
+if (!dir.exists(Output_dir)) {
+  dir.create(Output_dir)
+}
 
 eisen <- get_ilter_generalinfo(country="Austria",
                               site_name = "LTSER Platform Eisen")
