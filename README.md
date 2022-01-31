@@ -60,8 +60,7 @@ lapply(pkg_list, function(p) {
 # Now install `ReLTER` from github and load
 # remotes::install_github('oggioniale/ReLTER') 
 
-# If you want the development
-# version, with latest functions:
+# If you want the development version, with latest functions:
 remotes::install_github("oggioniale/ReLTER@dev")
 library(ReLTER)
 
