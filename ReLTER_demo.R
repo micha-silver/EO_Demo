@@ -21,9 +21,9 @@ lapply(pkg_list,
                             quietly=TRUE)})
 
 # Now install `ReLTER` from github and load
-remotes::install_github("oggioniale/ReLTER")
+#remotes::install_github("oggioniale/ReLTER")
 # If you want the development version, with latest functions:
-#remotes::install_github("oggioniale/ReLTER@dev")
+remotes::install_github("oggioniale/ReLTER@dev")
 library(ReLTER)
 
 # Choose where to save outputs
@@ -169,9 +169,9 @@ tm_shape(osm) +
   tm_raster(style = "cont") +
   tm_layout(legend.outside = TRUE)
 
-source("~/work/EU_Projects/ReLTER/R/get_site_MODIS.R")
 get_site_MODIS(show_products = TRUE)
 get_site_MODIS(show_bands = "Vegetation_Indexes_Monthly_1Km (M*D13A3)" )
+get_site_MODIS(show_bands = "LST_3band_emissivity_8day_1km (M*D21A2)" )
 
 # Username and password saved in advance
 # For example:
@@ -180,7 +180,7 @@ get_site_MODIS(show_bands = "Vegetation_Indexes_Monthly_1Km (M*D13A3)" )
 # saveRDS(creds, "earthdata_credentials.rds)
 
 # Then...
-creds <- readRDS("earthdata_credentials.rds")
+creds <- readRDS("~/work/EU_Projects/EO_demo/earthdata_credentials.rds")
 
 # Set which product and which bands to get
 product = "Vegetation_Indexes_Monthly_1Km (M*D13A3)"

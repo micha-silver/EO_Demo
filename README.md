@@ -58,9 +58,9 @@ lapply(pkg_list, function(p) {
 })
 
 # Now install `ReLTER` from github and load
-remotes::install_github("oggioniale/ReLTER")
-# If you want the development version, with latest functions:
-# remotes::install_github('oggioniale/ReLTER@dev')
+# remotes::install_github('oggioniale/ReLTER') If you want the development
+# version, with latest functions:
+remotes::install_github("oggioniale/ReLTER@dev")
 library(ReLTER)
 
 # Choose where to save outputs
@@ -320,8 +320,6 @@ tm_shape(osm) + tm_rgb() + tm_shape(eisen_corine) + tm_raster(style = "pretty", 
 
 ### NDVI during the spring
 
-The COG format converts raster data to integer.
-
 ``` r
 # Takes several minutes
 eisen_ndvi <- get_site_ODS(eisen_deimsid, "ndvi_spring")
@@ -330,6 +328,8 @@ tm_shape(osm) + tm_rgb() + tm_shape(eisen_ndvi) + tm_raster(style = "pretty", pa
 ```
 
     ## stars object downsampled to 1089 by 918 cells. See tm_shape manual (argument raster.downsample)
+
+    ## Variable(s) "NA" contains positive and negative values, so midpoint is set to 0. Set midpoint = NA to show the full spectrum of the color palette.
 
 ![](ReLTER_demo_files/figure-gfm/ods-ndvi-1.png)<!-- -->
 
@@ -419,7 +419,6 @@ Geosciences, Volume 97, Pages 40-48, ISSN 0098-3004,
 ### What Products are available? What bands?
 
 ``` r
-source("~/work/EU_Projects/ReLTER/R/get_site_MODIS.R")
 get_site_MODIS(show_products = TRUE)
 ```
 
@@ -561,6 +560,16 @@ get_site_MODIS(show_bands = "Vegetation_Indexes_Monthly_1Km (M*D13A3)")
 
     ## NULL
 
+``` r
+get_site_MODIS(show_bands = "LST_3band_emissivity_8day_1km (M*D21A2)")
+```
+
+    ##  [1] "LST_Day_1KM"      "QC_Day"           "View_Angle_Day"   "View_Time_Day"   
+    ##  [5] "LST_Night_1KM"    "QC_Night"         "View_Angle_Night" "View_Time_Night" 
+    ##  [9] "Emis_29"          "Emis_31"          "Emis_32"
+
+    ## NULL
+
 ### Registering on EarthData website
 
 To acquire MODIS data you must be registered at:
@@ -574,7 +583,7 @@ password in the code below
 # 'earthdata_credentials.rds)
 
 # Then...
-creds <- readRDS("earthdata_credentials.rds")
+creds <- readRDS("~/work/EU_Projects/EO_demo/earthdata_credentials.rds")
 ```
 
 ### Download a time series of MODIS NDVI for Eisenwurzen
